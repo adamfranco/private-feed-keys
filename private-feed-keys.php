@@ -16,8 +16,10 @@ Primary differences from Feed Key:
  - Rather than blocking requests without a feed key, presence of a feed key authenticates feed requests as the user that matches the key. If no key is present the RSS feed request continues without authentication.
 */ 
 
+// Install actions
 register_activation_hook(__FILE__, 'private_feed_keys_install');
-// plugin hooks for authentication system
+
+// Authentication actions
 add_action('wp_authenticate', 'private_feed_keys_authenticate', 9, 2);
 // private blog plugin checks authentication in template_redirect, so be sure to
 // authenticate before it.
