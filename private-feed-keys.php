@@ -17,6 +17,11 @@ Primary differences from Feed Key:
 */ 
 
 register_activation_hook(__FILE__, 'private_feed_keys_install');
+// plugin hooks for authentication system
+add_action('wp_authenticate', 'private_feed_keys_authenticate', 9, 2);
+// private blog plugin checks authentication in template_redirect, so be sure to
+// authenticate before it.
+add_action('template_redirect', 'private_feed_keys_authenticate', 9, 2);
 
 /**
  * Install hook.
@@ -43,5 +48,37 @@ function private_feed_keys_install () {
 		dbDelta($sql);
 		
 		add_option("private_feed_keys_db_version", $pfk_db_version);
+	}
+}
+
+/**
+ * Bypass other authentication if requesting a feed and a valid key is included.
+ * 
+ * @return void
+ */
+function private_feed_keys_authenticate () {
+	if (is_feed() && $_GET['FEED_KEY']) {
+		global $wpdb, $blog_id;
+		
+		$table_name = $wpdb->base_prefix . "private_feed_keys";
+		$user_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT 
+				user_id 
+			FROM 
+				$table_name
+			WHERE 
+				blog_id = %d
+				AND feed_key = %s",
+			$blog_id, $_GET['FEED_KEY']
+		));
+		
+		// If we have a valid key, authenticate their user and skip later
+		// authentication hooks. If not valid, continue on to other authentication hooks.
+		if ($user_id) {
+			remove_all_actions('wp_authenticate');
+			
+			// Authenticate the user.
+			wp_set_current_user($user_id );
+		}
 	}
 }
