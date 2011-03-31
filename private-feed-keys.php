@@ -70,9 +70,9 @@ function private_feed_keys_authenticate () {
 		global $wpdb, $blog_id;
 		
 		$table_name = $wpdb->base_prefix . "private_feed_keys";
-		$user_id = $wpdb->get_var($wpdb->prepare(
+		$row = $wpdb->get_row($wpdb->prepare(
 			"SELECT 
-				user_id 
+				user_id, num_access
 			FROM 
 				$table_name
 			WHERE 
@@ -80,6 +80,12 @@ function private_feed_keys_authenticate () {
 				AND feed_key = %s",
 			$blog_id, $_GET['FEED_KEY']
 		));
+		if ($row) {
+			$user_id = $row->user_id;
+			$num_access = intval($row->num_access);
+		} else {
+			return;
+		}
 		
 		// If we have a valid key, authenticate their user and skip later
 		// authentication hooks. If not valid, continue on to other authentication hooks.
@@ -88,6 +94,19 @@ function private_feed_keys_authenticate () {
 			
 			// Authenticate the user.
 			wp_set_current_user($user_id );
+			
+			// Update our counter.
+			$wpdb->query($wpdb->prepare(
+				"UPDATE
+					$table_name
+				SET
+					last_access = NOW(),
+					num_access = %d
+				WHERE 
+					blog_id = %d
+					AND feed_key = %s",
+				$num_access + 1, $blog_id, $_GET['FEED_KEY']
+			));
 		}
 	}
 }
