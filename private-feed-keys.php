@@ -66,8 +66,8 @@ function private_feed_keys_install () {
  * @return void
  */
 function private_feed_keys_authenticate () {
-	if (is_feed() && $_GET['FEED_KEY']) {
-		global $wpdb, $blog_id;
+	global $wpdb, $blog_id, $current_user;
+	if (is_feed() && $_GET['FEED_KEY'] && !$current_user->ID) {
 		
 		$table_name = $wpdb->base_prefix . "private_feed_keys";
 		$row = $wpdb->get_row($wpdb->prepare(
