@@ -111,7 +111,12 @@ function private_feed_keys_filter_link ($url) {
 	if (intval(get_option('blog_public')) >= -1)
 		return $url;
 	
-	return $url.'?FEED_KEY='.private_feed_keys_get_key();
+	if (strpos('?', $url))
+		$url .= '&amp;';
+	else
+		$url .= '?';
+	
+	return $url.'FEED_KEY='.private_feed_keys_get_key();
 }
 
 /**
