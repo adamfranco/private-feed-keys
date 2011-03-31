@@ -16,6 +16,8 @@ Primary differences from Feed Key:
  - Rather than blocking requests without a feed key, presence of a feed key authenticates feed requests as the user that matches the key. If no key is present the RSS feed request continues without authentication.
 */ 
 
+register_activation_hook(__FILE__, 'private_feed_keys_install');
+
 /**
  * Install hook.
  */
@@ -23,7 +25,7 @@ function private_feed_keys_install () {
 	global $wpdb;
 	$pfk_db_version = '0.1';
 	
-	$table_name = $wpdb->prefix . "private_feed_keys";
+	$table_name = $wpdb->base_prefix . "private_feed_keys";
 	if($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
 		$sql = "CREATE TABLE " . $table_name . " (
 			blog_id int(11) NOT NULL,
@@ -43,4 +45,3 @@ function private_feed_keys_install () {
 		add_option("private_feed_keys_db_version", $pfk_db_version);
 	}
 }
-register_activation_hook(__FILE__, 'private_feed_keys_install');
