@@ -23,6 +23,13 @@ add_action('wp_authenticate', 'private_feed_keys_authenticate', 9, 2);
 // authenticate before it.
 add_action('template_redirect', 'private_feed_keys_authenticate', 9, 2);
 
+// Add filters to include our parameters on feed URLs for authenticated users.
+add_filter('feed_link', 'private_feed_keys_filter_link');
+add_filter('author_feed_link', 'private_feed_keys_filter_link');
+add_filter('category_feed_link', 'private_feed_keys_filter_link');
+add_filter('taxonomy_feed_link', 'private_feed_keys_filter_link');
+add_filter('post_comments_feed_link', 'private_feed_keys_filter_link');
+
 /**
  * Install hook.
  */
@@ -81,4 +88,74 @@ function private_feed_keys_authenticate () {
 			wp_set_current_user($user_id );
 		}
 	}
+}
+
+/**
+ * Add our parameters to the feed link.
+ * 
+ * @param string $url The feed URL.
+ * @param string $type The type of feed (e.g. "rss2", "atom", etc.)
+ * @return string
+ */
+function private_feed_keys_filter_link ($url) {
+	global $current_user;
+	
+	// Don't add feed keys for anonymous users.
+	if (!$current_user->ID)
+		return $url;
+	
+	// Don't add feed keys for publicly visible blogs
+	// 
+	// @todo Make this call pluggable to work with privacy modules other than
+	// "More Privacy Options".
+	if (intval(get_option('blog_public')) >= -1)
+		return $url;
+	
+	return $url.'?FEED_KEY='.private_feed_keys_get_key();
+}
+
+/**
+ * Answer a feed-key for the current user and current blog.
+ * 
+ * @return string
+ */
+function private_feed_keys_get_key () {
+	global $current_user, $blog_id, $wpdb;
+	if (!$current_user->ID)
+		throw new Exception(__FUNCTION__.' should only be called when a user is authenticated.');
+	if (!$blog_id)
+		throw new Exception(__FUNCTION__.' should only be called when on a blog.');
+	
+	// Return the existing key if one exists
+	$table_name = $wpdb->base_prefix . "private_feed_keys";
+	$feed_key = $wpdb->get_var($wpdb->prepare(
+		"SELECT 
+			feed_key 
+		FROM 
+			$table_name
+		WHERE 
+			blog_id = %d
+			AND user_id = %d",
+		$blog_id, $current_user->ID
+	));
+	if ($feed_key)
+		return $feed_key;
+	
+	// Generate a new key.
+	$feed_key = private_feed_keys_generate();
+	$result = $wpdb->insert($table_name, array('blog_id' => $blog_id, 'user_id' => $current_user->ID, 'feed_key' => $feed_key), array('%d', '%d', '%s'));
+	if (!$result)
+		throw new Exception("Could not insert feed key for ".$blog_id.", ".$current_user->ID);
+	
+	return $feed_key;
+}
+
+/**
+ * Generate a new feed key.
+ * 
+ * @return string
+ */
+function private_feed_keys_generate () {
+	global $current_user, $blog_id;
+	return sha1(mt_rand().$blog_id.$current_user->user_login);
 }
