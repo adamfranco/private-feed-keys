@@ -32,6 +32,13 @@ add_filter('category_feed_link', 'private_feed_keys_filter_link');
 add_filter('taxonomy_feed_link', 'private_feed_keys_filter_link');
 add_filter('post_comments_feed_link', 'private_feed_keys_filter_link');
 
+// User key listing and revocation
+add_action('show_user_profile', 'private_feed_keys_edit_user_profile');
+add_action('edit_user_profile', 'private_feed_keys_edit_user_profile');
+add_action('personal_options_update', 'private_feed_keys_update_user_profile');
+add_action('edit_user_profile_update', 'private_feed_keys_update_user_profile');
+
+
 /**
  * Install hook.
  */
@@ -184,4 +191,122 @@ function private_feed_keys_get_key () {
 function private_feed_keys_generate () {
 	global $current_user, $blog_id;
 	return sha1(mt_rand().$blog_id.$current_user->user_login);
+}
+
+/**
+ * Add our keys to the user profile screen.
+ * 
+ * @return void
+ */
+function private_feed_keys_edit_user_profile ($user) {
+	global $wpdb;
+	
+	print "\n<h3>"._("Private Feed Keys")."</h3>";
+	
+	if (isset($_SESSION['private_feed_keys_revoked'])) {
+		if (is_wp_error($_SESSION['private_feed_keys_revoked'])) {
+			print "\n<div class='error'><p>";
+			print $_SESSION['private_feed_keys_revoked']->get_error_message();
+			print "\n</p></div>";
+		} else {
+			print "\n<div class='updated'>\n\t<p><strong>";
+			print $_SESSION['private_feed_keys_revoked'];
+			if ($_SESSION['private_feed_keys_revoked'] > 1)
+				print " Feed Keys revoked."; 
+			else
+				print " Feed Key revoked.";
+			print "</strong></p>\n</div>";
+		}
+		unset($_SESSION['private_feed_keys_revoked']);
+	}
+	
+	print "\n<p class='description'>"._("Below are feed keys that allow you to subscribe to private blogs. A separate key has been generated for each private blog you have visited.")."</p>";
+	print "\n<p class='description'>"._("If you have accidentally shared a feed URL for one of these blogs with someone else, you can revoke its key to prevent unauthorized access. Please note that if you revoke a key you will have to resubscribe to any feeds from that blog.")."</p>";
+	print "\n<table class='form-table'>";
+	print "\n<thead>";
+	print "\n\t<tr>";
+	print "\n\t\t<th>Blog</th>";
+	print "\n\t\t<th>Feed Key</th>";
+	print "\n\t\t<th>Date Created</th>";
+	print "\n\t\t<th>Last Access</th>";
+	print "\n\t\t<th># Accessed</th>";
+	print "\n\t\t<th>Actions</th>";
+	print "\n\t</tr>";
+	print "\n</thead>";
+	print "\n<tbody>";
+	
+	$table_name = $wpdb->base_prefix . "private_feed_keys";
+	$results = $wpdb->get_results($wpdb->prepare(
+		"SELECT 
+			* 
+		FROM 
+			$table_name 
+		WHERE 
+			user_id = %d
+			AND num_access > 0
+		ORDER BY
+			last_access
+		",
+		$user->ID
+	));
+	if (empty($results)) {
+		print "\n\t<tr><td colspan='6' style='text-align: center; font-weight: bold;'>"._("You have no Feed Keys in use.")."</td></tr>";
+	} else {
+		foreach ($results as $row) {
+			$details = get_blog_details($row->blog_id, true);
+			print "\n\t<tr>";
+			print "\n\t\t<td><a href='".$details->siteurl."' target='_blank'>".$details->blogname."</a></td>";
+			print "\n\t\t<td>".$row->feed_key."</td>";
+			print "\n\t\t<td>".$row->created."</td>";
+			print "\n\t\t<td>".$row->last_access."</td>";
+			print "\n\t\t<td>".$row->num_access."</td>";
+			print "\n\t\t<td><input type='checkbox' name='private_feed_keys_revoke' value='".$row->blog_id."'/> revoke key</td>";
+			print "\n\t</tr>";
+		}
+	}	
+	print "\n</tbody>";
+	print "\n</table>";
+}
+
+/**
+ * Revoke any keys chosen in user-profile saving.
+ * 
+ * @return boolean
+ */
+function private_feed_keys_update_user_profile ($user_id) {
+	global $wpdb;
+	
+	if (!current_user_can('edit_user', $user_id))
+		return false;
+	
+	if (isset($_POST['private_feed_keys_revoke'])) {
+		if (is_array($_POST['private_feed_keys_revoke'])) {
+			$blog_ids = $_POST['private_feed_keys_revoke'];
+			foreach ($blog_ids as $key => $val) {
+				$blog_ids[$key] = intval($val);
+			}
+		} else {
+			$blog_ids = array(intval($_POST['private_feed_keys_revoke']));
+		}
+		if (!count($blog_ids))
+			return false;
+		
+		// Delete the keys
+		$table_name = $wpdb->base_prefix . "private_feed_keys";
+		$numRevoked = $wpdb->query($wpdb->prepare(
+			"DELETE FROM $table_name
+			WHERE
+				user_id = %d
+				AND blog_id IN (".implode(',', $blog_ids).")",
+			$user_id
+		));
+		
+		if ($numRevoked) {
+			$_SESSION['private_feed_keys_revoked'] = $numRevoked;
+			return true;
+		} else {
+			$_SESSION['private_feed_keys_revoked'] = new WP_Error('private_feed_keys_revoke_failed', __("Failed to revoke keys."));
+			return false;
+		}
+	}
 }
