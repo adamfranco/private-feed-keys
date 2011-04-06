@@ -3,7 +3,7 @@
 Plugin Name: Private Feed Keys
 Plugin URI: https://github.com/adamfranco/private-feed-keys
 Description: Allows subscription to RSS feeds on private blogs that require authentication. Works with "More Privacy Options" on multi-site installs.
-Version: 0.1
+Version: 1.0
 Author: Adam Franco 
 Author URI: http://www.adamfranco.com/
 
