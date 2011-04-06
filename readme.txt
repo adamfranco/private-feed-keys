@@ -28,8 +28,6 @@ Licensed under the [GNU General Public License 2.0 (GPL)](http://www.gnu.org/lic
 
 This section describes how to install the plugin and get it working.
 
-e.g.
-
 1. Install and network-activate the [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) plugin
 1. Upload `private-feed-keys.php` to the `/wp-content/plugins/` directory
 1. Network-activate the plugin through the SuperAdmin-Plugins menu in WordPress
