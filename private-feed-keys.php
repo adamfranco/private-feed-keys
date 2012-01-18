@@ -82,7 +82,15 @@ function private_feed_keys_install () {
  */
 function private_feed_keys_authenticate () {
 	global $wpdb, $blog_id, $current_user;
-	if (is_feed() && $_GET['FEED_KEY'] && !$current_user->ID) {
+	
+	if (!empty($_GET['FEED_KEY']))
+		$feed_key = $_GET['FEED_KEY'];
+	else if (!empty($_GET['feed_key']))
+		$feed_key = $_GET['feed_key'];
+	else
+		$feed_key = null;
+	
+	if (is_feed() && $feed_key && !$current_user->ID) {
 		
 		$table_name = $wpdb->base_prefix . "private_feed_keys";
 		$row = $wpdb->get_row($wpdb->prepare(
@@ -93,7 +101,7 @@ function private_feed_keys_authenticate () {
 			WHERE 
 				blog_id = %d
 				AND feed_key = %s",
-			$blog_id, $_GET['FEED_KEY']
+			$blog_id, $feed_key
 		));
 		if ($row) {
 			$user_id = $row->user_id;
@@ -120,7 +128,7 @@ function private_feed_keys_authenticate () {
 				WHERE 
 					blog_id = %d
 					AND feed_key = %s",
-				$num_access + 1, $blog_id, $_GET['FEED_KEY']
+				$num_access + 1, $blog_id, $feed_key
 			));
 		}
 	}
