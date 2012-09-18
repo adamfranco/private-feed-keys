@@ -3,7 +3,7 @@
 Plugin Name: Private Feed Keys
 Plugin URI: https://github.com/adamfranco/private-feed-keys
 Description: Allows subscription to RSS feeds on private blogs that require authentication. Works with "More Privacy Options" on multi-site installs.
-Version: 1.0
+Version: 1.1
 Author: Adam Franco 
 Author URI: http://www.adamfranco.com/
 
@@ -29,9 +29,9 @@ register_activation_hook(__FILE__, 'private_feed_keys_install');
 
 // Authentication actions
 add_action('wp_authenticate', 'private_feed_keys_authenticate', 9, 2);
-// private blog plugin checks authentication in template_redirect, so be sure to
+// The More Privacy Options plugin checks authentication in send_headers, so be sure to
 // authenticate before it.
-add_action('template_redirect', 'private_feed_keys_authenticate', 9, 2);
+add_action('send_headers', 'private_feed_keys_authenticate', 9, 2);
 
 // Add filters to include our parameters on feed URLs for authenticated users.
 add_filter('feed_link', 'private_feed_keys_filter_link');
@@ -80,9 +80,7 @@ function private_feed_keys_install () {
  * 
  * @return void
  */
-function private_feed_keys_authenticate () {
-	global $wpdb, $blog_id, $current_user;
-	
+function private_feed_keys_authenticate () {	
 	if (!empty($_GET['FEED_KEY']))
 		$feed_key = $_GET['FEED_KEY'];
 	else if (!empty($_GET['feed_key']))
@@ -90,7 +88,14 @@ function private_feed_keys_authenticate () {
 	else
 		$feed_key = null;
 	
-	if (is_feed() && $feed_key && !$current_user->ID) {
+	if (empty($feed_key) || $current_user->ID)
+		return;
+	
+	global $wpdb, $blog_id, $current_user, $wp;
+	// The global $wp_query object isn't ready yet, so we'll just use our own for the is_feed test.
+	$query = new WP_Query();
+	$query->query($wp->query_vars);
+	if ($query->is_feed()) {
 		
 		$table_name = $wpdb->base_prefix . "private_feed_keys";
 		$row = $wpdb->get_row($wpdb->prepare(

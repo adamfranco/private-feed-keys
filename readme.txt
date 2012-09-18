@@ -2,8 +2,8 @@
 Contributors: adamfranco
 Tags: rss, feed, feeds, feedkey, key, access, privacy, private, multisite, members only
 Requires at least: 3.0
-Tested up to: 3.1
-Stable tag: 1.0
+Tested up to: 3.4.2
+Stable tag: 1.1
 
 Allows subscription to RSS feeds on private blogs that require authentication. Works with "More Privacy Options" on multi-site installs.
 
@@ -53,6 +53,9 @@ No, the key only grants access to feeds, nothing more.
 1. The user profile page with a listing of the user's feed keys and the ability to revoke them.
 
 == Changelog ==
+
+= 1.1 =
+* [Fix](https://github.com/adamfranco/private-feed-keys/issues/1) to work with [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) 3.2.1.5 and up. 
 
 = 1.0 =
 * Initial Release.
