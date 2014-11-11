@@ -9,7 +9,7 @@ Allows subscription to RSS feeds on private blogs that require authentication. W
 
 == Description ==
 
-This plugin allows users to subscribe to feeds requiring authentication. When using [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) in a multi-site installation RSS feeds for blogs marked as private require authentication. This plugin adds a user and site specific 40-character key on private blogs, creating a unique feed URL for each registered on user the blog. This allows feeds on private blogs to be subscribed to using feed readers that do not support authentication. As or on sites that do not use local authentication.
+This plugin allows users to subscribe to feeds requiring authentication. When using [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) in a multi-site installation RSS feeds for blogs marked as private require authentication. This plugin adds a user and site specific 40-character key on private blogs, creating a unique feed URL for each registered on user the blog. This allows feeds on private blogs to be subscribed to using feed readers that do not support authentication. As well, this allows subscription on sites where local HTTP authentication of feeds is not possible, such as those that use CAS or OpenId to authenticate users.
 
 This plugin is similar in concept to the [Feed Key](http://code.andrewhamilton.net/wordpress/plugins/feed-key/) plugin, but designed from the ground up to operate in a multi-site context where access is controlled by the [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) plugin.
 
@@ -25,8 +25,6 @@ Primary differences from Feed Key:
 Licensed under the [GNU General Public License 2.0 (GPL)](http://www.gnu.org/licenses/gpl.html)
 
 == Installation ==
-
-This section describes how to install the plugin and get it working.
 
 1. Install and network-activate the [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) plugin
 1. Upload `private-feed-keys.php` to the `/wp-content/plugins/` directory
