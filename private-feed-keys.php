@@ -160,7 +160,7 @@ function private_feed_keys_filter_link ($url) {
 	if (intval(get_option('blog_public')) >= -1)
 		return $url;
 	
-	if (strpos('?', $url))
+	if (strpos($url, '?'))
 		$url .= '&amp;';
 	else
 		$url .= '?';
