@@ -38,7 +38,13 @@ Licensed under the [GNU General Public License 2.0 (GPL)](http://www.gnu.org/lic
 
 = Developer installation =
 
-In place of step #2 above, `cd wp-content/plugins/` then run `git clone https://github.com/adamfranco/private-feed-keys.git` .
+In place of step #2 above, 
+
+    cd wp-content/plugins/
+
+then run
+
+    git clone https://github.com/adamfranco/private-feed-keys.git
 
 == Frequently Asked Questions ==
 
