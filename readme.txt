@@ -28,8 +28,10 @@ Licensed under the [GNU General Public License 2.0 (GPL)](http://www.gnu.org/lic
 
 == Installation ==
 
+= Standard installation =
+
 1. Install and network-activate the [More Privacy Options](http://wordpress.org/extend/plugins/more-privacy-options/) plugin
-1. Upload `private-feed-keys.php` to the `/wp-content/plugins/` directory
+1. Download the `private-feed-keys.x.x.zip` file to your `wp-content/plugins/` directory and unzip it.
 1. Network-activate the plugin through the SuperAdmin-Plugins menu in WordPress
 1. Feed keys will be added to feed urls when individual blog privacy options are set to "Subscribers Only" or greater on the Settings-Privacy page
 1. Users (and network admins) can revoke their keys from individual blogs via the users' profile page.
