@@ -150,7 +150,7 @@ function private_feed_keys_filter_link ($url) {
 	global $current_user;
 	
 	// Don't add feed keys for anonymous users.
-	if (!$current_user->ID)
+	if (empty($current_user->ID))
 		return $url;
 	
 	// Don't add feed keys for publicly visible blogs
