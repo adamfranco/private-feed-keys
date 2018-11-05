@@ -157,7 +157,7 @@ function private_feed_keys_filter_link ($url) {
 	// 
 	// @todo Make this call pluggable to work with privacy modules other than
 	// "More Privacy Options".
-	if (intval(get_option('blog_public')) >= -1)
+	if (intval(get_option('blog_public')) >= 0)
 		return $url;
 	
 	if (strpos($url, '?'))
